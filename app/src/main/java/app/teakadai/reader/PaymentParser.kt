@@ -40,8 +40,42 @@ object PaymentParser {
     // "Rs.100.37 credited to A/c"   "A/c credited with Rs 45"   "deposited ₹45"
     private val creditedAmount = Regex("""(?:credited|deposited)(?:\s+with)?\s+$AMT""", opts)
 
+    private val oddSpaces = Regex("[\\u00A0\\u1680\\u2000-\\u200A\\u202F\\u205F\\u3000]")
+    private val invisible = Regex("[\\u200B-\\u200F\\u202A-\\u202E\\u2060-\\u2064\\uFEFF]")
+
+    /** Some apps use non-breaking spaces or hidden marks; make them plain so the patterns match. */
+    fun normalize(s: String): String = s.replace(oddSpaces, " ").replace(invisible, "")
+
+    /**
+     * For "not understood" notifications only: the SHAPE of the text (letters become a or A, digits become 9),
+     * plus the blocked word if one was found. Never the real words, so no name or amount can be read from it.
+     */
+    fun diagnose(title: String, text: String): String {
+        fun shape(v: String): String {
+            val sb = StringBuilder()
+            for (ch in v) {
+                sb.append(
+                    when {
+                        ch.isDigit() -> '9'
+                        ch.isUpperCase() -> 'A'
+                        ch.isLowerCase() -> 'a'
+                        ch == ' ' || ch == '\u20B9' || ch in ".,:;-()/@&'\"%+_" -> ch
+                        else -> "<" + Integer.toHexString(ch.code) + ">"
+                    },
+                )
+                if (sb.length > 120) break
+            }
+            return sb.toString()
+        }
+        val joined = normalize("$title $text")
+        val blocked = rejectWords.find(joined)?.value
+        return "title " + shape(title) + "\ntext " + shape(text) + (if (blocked != null) "\nblocked word: $blocked" else "\nno known wording matched")
+    }
+
     /** Tries the title, then the body, then both together. */
-    fun parse(title: String, text: String): ParsedPayment? {
+    fun parse(rawTitle: String, rawText: String): ParsedPayment? {
+        val title = normalize(rawTitle)
+        val text = normalize(rawText)
         for (candidate in listOf(title, text, "$title $text")) {
             val c = candidate.trim()
             if (c.isEmpty()) continue

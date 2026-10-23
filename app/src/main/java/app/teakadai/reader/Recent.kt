@@ -34,8 +34,9 @@ object Recent {
     /** Only app name, time and "read" / "not understood" per payment app. Never any notification text. */
     private val seen = LinkedHashMap<String, String>()
 
-    @Synchronized fun noteSeen(app: String, understood: Boolean) {
-        seen[app] = SimpleDateFormat("HH:mm:ss", Locale.US).format(Date()) + " - " + (if (understood) "read" else "not understood")
+    @Synchronized fun noteSeen(app: String, understood: Boolean, detail: String = "") {
+        seen[app] = SimpleDateFormat("HH:mm:ss", Locale.US).format(Date()) + " - " + (if (understood) "read" else "not understood") +
+            (if (!understood && detail.isNotEmpty()) "\n" + detail.take(400) else "")
         onChange?.invoke()
     }
 
