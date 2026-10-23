@@ -31,10 +31,21 @@ object Recent {
         onChange?.invoke()
     }
 
+    /** Only app name, time and "read" / "not understood" per payment app. Never any notification text. */
+    private val seen = LinkedHashMap<String, String>()
+
+    @Synchronized fun noteSeen(app: String, understood: Boolean) {
+        seen[app] = SimpleDateFormat("HH:mm:ss", Locale.US).format(Date()) + " - " + (if (understood) "read" else "not understood")
+        onChange?.invoke()
+    }
+
+    @Synchronized fun seenSnapshot(): List<String> = seen.entries.map { it.key + ": " + it.value }
+
     @Synchronized fun snapshot(): List<Row> = rows.toList()
 
     @Synchronized fun clear() {
         rows.clear()
+        seen.clear()
         onChange?.invoke()
     }
 }

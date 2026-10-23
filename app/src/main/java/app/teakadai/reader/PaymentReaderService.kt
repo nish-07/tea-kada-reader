@@ -29,7 +29,9 @@ class PaymentReaderService : NotificationListenerService() {
         val text = (extras.getCharSequence(Notification.EXTRA_BIG_TEXT) ?: extras.getCharSequence(Notification.EXTRA_TEXT)
             ?: extras.getCharSequence(Notification.EXTRA_SUB_TEXT))?.toString().orEmpty()
 
-        val parsed = PaymentParser.parse(title, text) ?: return
+        val parsed = PaymentParser.parse(title, text)
+        Recent.noteSeen(appLabel, parsed != null) // app name and time only, never the text
+        if (parsed == null) return
         val row = Recent.add(appLabel, parsed.amountPaise, parsed.payerName)
         Uploader.send(settings, parsed.amountPaise, parsed.payerName, pkg, row)
     }

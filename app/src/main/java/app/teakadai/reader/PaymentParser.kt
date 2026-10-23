@@ -27,6 +27,8 @@ object PaymentParser {
 
     // "N MUTHAIAH paid you ₹1.00"   "Raj sent you ₹5"
     private val paidYou = Regex("""^\s*(.{1,80}?)\s+(?:paid|sent)\s+you\s+$AMT""", opts)
+    // PhonePe: "RAJ KUMAR has sent ₹1 to your bank account Federal Bank-8326"
+    private val sentToYour = Regex("""^\s*(.{1,80}?)\s+(?:has\s+)?(?:sent|paid)\s+$AMT\s+to\s+your\b""", opts)
     // "Received ₹1 from RAJ KUMAR"   "Payment received ₹1 from RAJ"
     private val receivedFrom = Regex(
         """received\s+$AMT\s+from\s+(.{1,80}?)(?=\s+(?:on|via|using|in|to|through|with|at|ref|upi|deposited|credited)\b|[.,;:(]|$)""", opts,
@@ -53,6 +55,7 @@ object PaymentParser {
         if (rejectWords.containsMatchIn(s)) return null
 
         paidYou.find(s)?.let { return build(it.groupValues[2], it.groupValues[1]) }
+        sentToYour.find(s)?.let { return build(it.groupValues[2], it.groupValues[1]) }
         receivedFrom.find(s)?.let { return build(it.groupValues[1], it.groupValues[2]) }
         amountReceived.find(s)?.let { return build(it.groupValues[1], it.groupValues[2]) }
         creditedAmount.find(s)?.let { return build(it.groupValues[1], null) }
