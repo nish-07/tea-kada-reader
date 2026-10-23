@@ -5,6 +5,17 @@
          No SMS, contacts, storage, location or battery permissions. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Lets the reader draw a payment app's own notification layout to read its words. Only these apps, no broad permission. -->
+    <queries>
+        <package android:name="com.google.android.apps.nbu.paisa.user" />
+        <package android:name="com.google.android.apps.nbu.paisa.merchant" />
+        <package android:name="com.phonepe.app" />
+        <package android:name="net.one97.paytm" />
+        <package android:name="com.paytm.business" />
+        <package android:name="in.org.npci.upiapp" />
+        <package android:name="com.myairtelapp" />
+    </queries>
+
     <application
         android:allowBackup="false"
         android:dataExtractionRules="@xml/no_backup"

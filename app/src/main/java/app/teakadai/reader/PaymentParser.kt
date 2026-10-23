@@ -72,6 +72,45 @@ object PaymentParser {
         return "title " + shape(title) + "\ntext " + shape(text) + (if (blocked != null) "\nblocked word: $blocked" else "\nno known wording matched")
     }
 
+    /** Tries every piece of text of one notification, each alone, then neighbours together, then all together. */
+    fun parseAny(pieces: List<String>): ParsedPayment? {
+        val ps = pieces.map { normalize(it).trim() }.filter { it.isNotEmpty() }.distinct()
+        for (x in ps) parse(x, "")?.let { return it }
+        for (i in 0 until ps.size - 1) parse(ps[i], ps[i + 1])?.let { return it }
+        if (ps.size > 2) parse(ps.joinToString(" "), "")?.let { return it }
+        return null
+    }
+
+    /** Masked shapes of every piece, labelled. Same masking as diagnose(): letters and digits are hidden. */
+    fun diagnoseAll(labelled: List<Pair<String, String>>): String {
+        val sb = StringBuilder()
+        for ((k, v) in labelled) {
+            if (v.isBlank()) continue
+            sb.append(k).append(' ').append(shapeOf(v, 70)).append('\n')
+        }
+        val blocked = rejectWords.find(normalize(labelled.joinToString(" ") { it.second }))?.value
+        sb.append(if (blocked != null) "blocked word: $blocked" else "no known wording matched")
+        return sb.toString()
+    }
+
+    private fun shapeOf(v: String, max: Int): String {
+        val sb = StringBuilder()
+        for (ch in v) {
+            sb.append(
+                when {
+                    ch.isDigit() -> '9'
+                    ch.isUpperCase() -> 'A'
+                    ch.isLowerCase() -> 'a'
+                    ch == ' ' || ch == '\u20B9' || ch in ".,:;-()/@&'\"%+_" -> ch
+                    ch == '\n' -> '/'
+                    else -> "<" + Integer.toHexString(ch.code) + ">"
+                },
+            )
+            if (sb.length > max) break
+        }
+        return sb.toString()
+    }
+
     /** Tries the title, then the body, then both together. */
     fun parse(rawTitle: String, rawText: String): ParsedPayment? {
         val title = normalize(rawTitle)

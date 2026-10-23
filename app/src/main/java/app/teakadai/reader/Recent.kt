@@ -36,7 +36,7 @@ object Recent {
 
     @Synchronized fun noteSeen(app: String, understood: Boolean, detail: String = "") {
         seen[app] = SimpleDateFormat("HH:mm:ss", Locale.US).format(Date()) + " - " + (if (understood) "read" else "not understood") +
-            (if (!understood && detail.isNotEmpty()) "\n" + detail.take(400) else "")
+            (if (!understood && detail.isNotEmpty()) "\n" + detail.take(700) else "")
         onChange?.invoke()
     }
 
