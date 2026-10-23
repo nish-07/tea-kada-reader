@@ -23,9 +23,11 @@ class PaymentReaderService : NotificationListenerService() {
         val settings = Vault.load(applicationContext) ?: return
 
         val extras = sbn.notification?.extras ?: return
-        val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty()
-        val text = (extras.getCharSequence(Notification.EXTRA_BIG_TEXT) ?: extras.getCharSequence(Notification.EXTRA_TEXT))
-            ?.toString().orEmpty()
+        // Some apps leave the normal title or text empty and use the "big" or ticker version instead.
+        val title = (extras.getCharSequence(Notification.EXTRA_TITLE) ?: extras.getCharSequence(Notification.EXTRA_TITLE_BIG))
+            ?.toString().orEmpty().ifBlank { sbn.notification?.tickerText?.toString().orEmpty() }
+        val text = (extras.getCharSequence(Notification.EXTRA_BIG_TEXT) ?: extras.getCharSequence(Notification.EXTRA_TEXT)
+            ?: extras.getCharSequence(Notification.EXTRA_SUB_TEXT))?.toString().orEmpty()
 
         val parsed = PaymentParser.parse(title, text) ?: return
         val row = Recent.add(appLabel, parsed.amountPaise, parsed.payerName)

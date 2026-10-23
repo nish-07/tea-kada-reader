@@ -29,11 +29,11 @@ object PaymentParser {
     private val paidYou = Regex("""^\s*(.{1,80}?)\s+(?:paid|sent)\s+you\s+$AMT""", opts)
     // "Received ₹1 from RAJ KUMAR"   "Payment received ₹1 from RAJ"
     private val receivedFrom = Regex(
-        """received\s+$AMT\s+from\s+(.{1,80}?)(?=\s+(?:on|via|using|in|to|through|with|at|ref|upi)\b|[.,;:(]|$)""", opts,
+        """received\s+$AMT\s+from\s+(.{1,80}?)(?=\s+(?:on|via|using|in|to|through|with|at|ref|upi|deposited|credited)\b|[.,;:(]|$)""", opts,
     )
     // "₹1 received from RAJ"   "₹1 credited"
     private val amountReceived = Regex(
-        """$AMT\s+(?:received|credited)(?:\s+(?:from|by)\s+(.{1,80}?)(?=\s+(?:on|via|using|in|to|through|with|at|ref|upi)\b|[.,;:(]|$))?""", opts,
+        """$AMT\s+(?:received|credited)(?:\s+(?:from|by)\s+(.{1,80}?)(?=\s+(?:on|via|using|in|to|through|with|at|ref|upi|deposited|credited)\b|[.,;:(]|$))?""", opts,
     )
     // "Rs.100.37 credited to A/c"   "A/c credited with Rs 45"   "deposited ₹45"
     private val creditedAmount = Regex("""(?:credited|deposited)(?:\s+with)?\s+$AMT""", opts)

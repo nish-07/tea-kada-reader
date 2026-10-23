@@ -13,6 +13,7 @@ object Allowlist {
         "com.google.android.apps.nbu.paisa.merchant" to "Google Pay for Business",
         "com.phonepe.app" to "PhonePe",
         "net.one97.paytm" to "Paytm",
+        "com.paytm.business" to "Paytm for Business",
         "in.org.npci.upiapp" to "BHIM",
         "com.myairtelapp" to "Airtel Thanks",
     )
